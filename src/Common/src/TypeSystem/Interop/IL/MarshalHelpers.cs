@@ -159,12 +159,15 @@ namespace Internal.TypeSystem.Interop
                 MarshallerKind kind, 
                 MarshallerKind elementMarshallerKind,
                 InteropStateManager interopStateManager,
-                MarshalAsDescriptor marshalAs)
+                MarshalAsDescriptor marshalAs,
+                bool isArrayElement = false)
         {
             TypeSystemContext context = type.Context;
             NativeTypeKind nativeType = NativeTypeKind.Invalid;
             if (marshalAs != null)
-                nativeType = marshalAs.Type;
+            {
+                nativeType = isArrayElement ? marshalAs.ArraySubType : marshalAs.Type;
+            }
 
             switch (kind)
             {
@@ -199,6 +202,12 @@ namespace Internal.TypeSystem.Interop
 
                 case MarshallerKind.Bool:
                     return context.GetWellKnownType(WellKnownType.Int32);
+
+                case MarshallerKind.CBool:
+                    if (nativeType == NativeTypeKind.U1)
+                        return context.GetWellKnownType(WellKnownType.Byte);
+                    else
+                        return context.GetWellKnownType(WellKnownType.SByte);
 
                 case MarshallerKind.Enum:
                 case MarshallerKind.BlittableStruct:
@@ -236,9 +245,6 @@ namespace Internal.TypeSystem.Interop
                 case MarshallerKind.AnsiStringBuilder:
                     return context.GetWellKnownType(WellKnownType.Byte).MakePointerType();
 
-                case MarshallerKind.CBool:
-                    return context.GetWellKnownType(WellKnownType.Byte);
-
                 case MarshallerKind.BlittableArray:
                 case MarshallerKind.Array:
                 case MarshallerKind.AnsiCharArray:
@@ -254,7 +260,8 @@ namespace Internal.TypeSystem.Interop
                             elementMarshallerKind,
                             MarshallerKind.Unknown,
                             interopStateManager,
-                            null);
+                            marshalAs, 
+                            isArrayElement: true);
 
                         return elementNativeType.MakePointerType();
                     }
