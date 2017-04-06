@@ -247,7 +247,6 @@ namespace Internal.TypeSystem.Interop
 
                 case MarshallerKind.BlittableArray:
                 case MarshallerKind.Array:
-                case MarshallerKind.AnsiCharArray:
                     {
                         ArrayType arrayType = type as ArrayType;
                         Debug.Assert(arrayType != null, "Expecting array");
@@ -267,7 +266,12 @@ namespace Internal.TypeSystem.Interop
                     }
 
                 case MarshallerKind.AnsiChar:
-                    return context.GetWellKnownType(WellKnownType.Byte);
+                    {
+                        if (nativeType == NativeTypeKind.I1)
+                            return context.GetWellKnownType(WellKnownType.SByte);
+                        else
+                            return context.GetWellKnownType(WellKnownType.Byte);
+                    }
 
                 case MarshallerKind.FunctionPointer:
                     return context.GetWellKnownType(WellKnownType.IntPtr);
@@ -635,9 +639,7 @@ namespace Internal.TypeSystem.Interop
                                 if (elementMarshallerKind == MarshallerKind.Invalid)
                                     return MarshallerKind.Invalid;
 
-                                if (elementMarshallerKind == MarshallerKind.AnsiChar)
-                                    return MarshallerKind.AnsiCharArray;
-                                else if (elementMarshallerKind == MarshallerKind.UnicodeChar    // Arrays of unicode char should be marshalled as blittable arrays
+                                if (elementMarshallerKind == MarshallerKind.UnicodeChar    // Arrays of unicode char should be marshalled as blittable arrays
                                     || elementMarshallerKind == MarshallerKind.Enum
                                     || elementMarshallerKind == MarshallerKind.BlittableValue)
                                     return MarshallerKind.BlittableArray;

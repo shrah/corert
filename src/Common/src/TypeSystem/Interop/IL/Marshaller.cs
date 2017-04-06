@@ -22,7 +22,6 @@ namespace Internal.TypeSystem.Interop
         Enum,
         AnsiChar,  // Marshal char (Unicode 16bits) for byte (Ansi 8bits)
         UnicodeChar,
-        AnsiCharArray,
         ByValArray,
         ByValAnsiCharArray, // Particular case of ByValArray because the conversion between wide Char and Byte need special treatment.
         AnsiString,
@@ -359,6 +358,8 @@ namespace Internal.TypeSystem.Interop
                 case MarshallerKind.BlittableStruct:
                 case MarshallerKind.UnicodeChar:
                     return new BlittableValueMarshaller();
+                case MarshallerKind.AnsiChar:
+                    return new AnsiCharMarshaller();
                 case MarshallerKind.Array:
                     return new ArrayMarshaller();
                 case MarshallerKind.BlittableArray:
@@ -932,6 +933,27 @@ namespace Internal.TypeSystem.Interop
         }
     }
 
+    class AnsiCharMarshaller : Marshaller
+    {
+        protected override void AllocAndTransformManagedToNative(ILCodeStream codeStream)
+        {
+            ILEmitter emitter = _ilCodeStreams.Emitter;
+            var helper = Context.GetHelperEntryPoint("InteropHelpers", "WildCharToAnsi");
+            LoadManagedValue(codeStream);
+            codeStream.Emit(ILOpcode.call, emitter.NewToken(helper));
+            StoreNativeValue(codeStream);
+        }
+
+        protected override void TransformNativeToManaged(ILCodeStream codeStream)
+        {
+            ILEmitter emitter = _ilCodeStreams.Emitter;
+            var helper = Context.GetHelperEntryPoint("InteropHelpers", "AnsiToWildChar");
+            LoadNativeValue(codeStream);
+            codeStream.Emit(ILOpcode.call, emitter.NewToken(helper));
+            StoreManagedValue(codeStream);
+        }
+    }
+
     class ArrayMarshaller : Marshaller
     {
         private Marshaller _elementMarshaller;
@@ -976,8 +998,8 @@ namespace Internal.TypeSystem.Interop
             else
             {
 
-                uint? sizeParamIndex = MarshalAsDescriptor.SizeParamIndex;
-                uint? sizeConst = MarshalAsDescriptor.SizeConst;
+                uint? sizeParamIndex = MarshalAsDescriptor != null ? MarshalAsDescriptor.SizeParamIndex : null;
+                uint? sizeConst = MarshalAsDescriptor != null ? MarshalAsDescriptor.SizeConst : null;
 
                 if (sizeConst.HasValue)
                 {

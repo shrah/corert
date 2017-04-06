@@ -71,6 +71,6 @@ set TestExitCode=!ERRORLEVEL!
 :: CoreCLR pri-0 tests at ~50MB of native artifacts per test, we can easily use 300GB
 :: of disk space and clog up the CI machines
 ::
-rd /s /q %TestFolder%\native
+:: rd /s /q %TestFolder%\native
 
 exit /b !TestExitCode!

@@ -18,24 +18,29 @@ namespace Internal.Runtime.CompilerHelpers
     /// </summary>
     internal static class InteropHelpers
     {
+        private static unsafe byte* CharToByte(char* pStr, int stringLength)
+        {
+            // CORERT-TODO: Use same encoding as the rest of the interop
+            var encoding = Encoding.UTF8;
+            int bufferLength = encoding.GetByteCount(pStr, stringLength);
+            byte* buffer = (byte*)PInvokeMarshal.CoTaskMemAlloc((UIntPtr)(void*)(bufferLength + 1)).ToPointer();
+            encoding.GetBytes(pStr, stringLength, buffer, bufferLength);
+            *(buffer + bufferLength) = 0;
+            return buffer;
+        }
+
         internal static unsafe byte* StringToAnsi(String str)
         {
             if (str == null)
                 return null;
 
-            // CORERT-TODO: Use same encoding as the rest of the interop
-            var encoding = Encoding.UTF8;
 
             fixed (char* pStr = str)
             {
-                int stringLength = str.Length;
-                int bufferLength = encoding.GetByteCount(pStr, stringLength);
-                byte *buffer = (byte*)PInvokeMarshal.CoTaskMemAlloc((UIntPtr)(void*)(bufferLength+1)).ToPointer();
-                encoding.GetBytes(pStr, stringLength, buffer, bufferLength);
-                *(buffer + bufferLength) = 0;
-                return buffer;
+                return CharToByte(pStr, str.Length);
             }
         }
+
         internal static unsafe void  StringToAnsiFixedArray(String str, byte *buffer, int length)
         {
             if (buffer == null)
@@ -140,6 +145,19 @@ namespace Internal.Runtime.CompilerHelpers
         public static unsafe string UnicodeBufferToString(char* buffer)
         {
             return new String(buffer);
+        }
+
+        public static unsafe byte WildCharToAnsi(char c)
+        {
+            byte *nativeArray = CharToByte(&c, 1);
+            byte b = *nativeArray;
+            PInvokeMarshal.CoTaskMemFree((IntPtr)nativeArray);
+            return (byte)c;
+        }
+
+        public static char AnsiToWildChar(byte b)
+        {
+            return (char)b;
         }
 
         internal static char[] GetEmptyStringBuilderBuffer(StringBuilder sb)
