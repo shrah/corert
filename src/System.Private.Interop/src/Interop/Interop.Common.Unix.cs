@@ -32,5 +32,25 @@ namespace System.Runtime.InteropServices
         {
             throw new PlatformNotSupportedException("OutputDebugString");
         }
+        
+        internal static void VariantClear(IntPtr pObject)
+        {
+            throw new PlatformNotSupportedException("VariantClear");
+        }
+
+        internal static unsafe int CoMarshalInterface(IntPtr pStream, ref Guid iid, IntPtr pUnk, Interop.COM.MSHCTX dwDestContext, IntPtr pvDestContext, Interop.COM.MSHLFLAGS mshlflags)
+        {
+            throw new PlatformNotSupportedException("CoMarshalInterface");
+        }
+
+        internal static unsafe int CoUnmarshalInterface(IntPtr pStream, ref Guid iid, out IntPtr ppv)
+        {
+            throw new PlatformNotSupportedException("CoUnmarshalInterface");
+        }
+
+        internal static unsafe int CoGetMarshalSizeMax(out ulong pulSize, ref Guid iid, IntPtr pUnk, Interop.COM.MSHCTX dwDestContext, IntPtr pvDestContext, Interop.COM.MSHLFLAGS mshlflags)
+        {
+            throw new PlatformNotSupportedException("CoGetMarshalSizeMax");
+        }
     }
 }
