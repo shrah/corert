@@ -10,7 +10,6 @@ set(NATIVE_SOURCES
     pal_memory.cpp
     pal_threading.cpp
     pal_time.cpp
-    pal_exepath.cpp
 )
 
 add_library(System.Private.CoreLib.Native

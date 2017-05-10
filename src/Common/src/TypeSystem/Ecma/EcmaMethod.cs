@@ -434,6 +434,7 @@ namespace Internal.TypeSystem.Ecma
             // check to see whether it is assigned on the containing assembly
             if (dllImportSearchPath == DllImportSearchPath.None)
             {
+                Debug.Assert(Module is IAssemblyDesc, "Multi-module assemblies");
                 dllImportSearchPath = ((EcmaAssembly)Module).GetDllImportSearchPath();
             }
             return new PInvokeMetadata(moduleName, name, (PInvokeAttributes)import.Attributes, dllImportSearchPath);

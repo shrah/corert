@@ -2,11 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
+using Internal.Runtime.CompilerHelpers;
 
 namespace System
 {
@@ -16,12 +12,11 @@ namespace System
         {
             get
             {
-                string path;
-                bool found = Interop.Sys.GetEntrypointExecutableAbsolutePath(out path);
-                if (!found)
+                string path = StartupCodeHelpers.BasePath;
+                if (path == null)
                 {
-                  // TODO: throw appropriate exception
-                   throw new TypeLoadException("GetEntrypointExecutableAbsolutePath failed");
+                    //TODO: throw appropriate exception;
+                    throw new TypeLoadException("Could not read basepath");
                 }
                 return path.Substring(0, path.LastIndexOf('/'));
             }

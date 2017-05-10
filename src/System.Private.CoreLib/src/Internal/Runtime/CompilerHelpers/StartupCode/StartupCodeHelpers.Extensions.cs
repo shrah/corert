@@ -5,6 +5,7 @@
 using System;
 
 using Internal.Runtime.Augments;
+using System.Runtime.InteropServices;
 
 using Debug = Internal.Runtime.CompilerHelpers.StartupDebug;
 
@@ -43,6 +44,17 @@ namespace Internal.Runtime.CompilerHelpers
             Array.Copy(args, 1, mainArgs, 0, mainArgs.Length);
 
             return mainArgs;
+        }
+
+        public static string BasePath
+        {
+            get; private set;
+        }
+
+        [NativeCallable(EntryPoint = "InitializeBasePath", CallingConvention = CallingConvention.Cdecl)]
+        internal static unsafe void InitializeBasePath(char* path)
+        {
+            BasePath = new String(path);
         }
 
         private static void SetLatchedExitCode(int exitCode)

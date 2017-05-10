@@ -43,6 +43,7 @@ set(COMMON_RUNTIME_SOURCES
     thread.cpp
     threadstore.cpp
     UniversalTransitionHelpers.cpp
+    basepath.cpp
     
     ../gc/gccommon.cpp
     ../gc/gceewks.cpp

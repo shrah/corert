@@ -225,7 +225,7 @@ namespace Internal.Runtime.CompilerHelpers
             if (hModule != IntPtr.Zero) return hModule;
 
             bool searchAssemblyDirectory = true;
-            bool isRelativePath = System.IO.Path.IsPathRooted(moduleName);
+            bool isRelativePath = !System.IO.Path.IsPathRooted(moduleName);
 
             if (dllImportSearchPath != DllImportSearchPath.None)
             {

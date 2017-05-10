@@ -268,7 +268,11 @@ static const pfn c_classlibFunctions[] = {
 
 extern "C" void InitializeModules(void* osModule, void ** modules, int count, void ** pClasslibFunctions, int nClasslibFunctions);
 
+extern "C" void InitializeBasePath(short *path);
+extern "C" bool GetEntrypointExecutableAbsolutePath(short **buf);
+
 #if defined(_WIN32)
+extern "C" void CoTaskMemFree(void *ptr);
 extern "C" int __managed__Main(int argc, wchar_t* argv[]);
 int wmain(int argc, wchar_t* argv[])
 #else
@@ -314,6 +318,17 @@ int main(int argc, char* argv[])
 #else // !CPPCODEGEN
     InitializeModules(nullptr, (void**)RtRHeaderWrapper(), 2, nullptr, 0);
 #endif // !CPPCODEGEN
+
+    short *path = NULL;
+    if (GetEntrypointExecutableAbsolutePath(&path))
+    {
+        InitializeBasePath(path);
+#if defined(_WIN32)
+        CoTaskMemFree((void*)path);
+#else
+        free((void*)path);
+#endif 
+    }
 
     int retval;
 #ifdef CPPCODEGEN
