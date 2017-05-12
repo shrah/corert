@@ -78,7 +78,7 @@ namespace Internal.TypeSystem
     }
 
     [Flags]
-    public enum PInvokeAttributes : short
+    public enum PInvokeAttributes : int
     {
         None = 0,
         ExactSpelling = 1,
@@ -98,13 +98,20 @@ namespace Internal.TypeSystem
         CallingConventionMask = 1792,
         ThrowOnUnmappableCharEnable = 4096,
         ThrowOnUnmappableCharDisable = 8192,
-        ThrowOnUnmappableCharMask = 12288
+        ThrowOnUnmappableCharMask = 12288,
+        DllImportSearchPathLegacyBehavior = 16384,
+        DllImportSearchPathAssemblyDirectory = 32768,
+        DllImportSearchPathUseDllDirectoryForDependencies = 65536,
+        DllImportSearchPathApplicationDirectory = 131072,
+        DllImportSearchPathUserDirectories = 262144,
+        DllImportSearchPathSystem32 = 524288,
+        DllImportSearchPathSafeDirectories = 1048576,
+        DllImportSearchPathMask = 2080768
     }
 
     public enum DllImportSearchPath : int
     {
         LegacyBehavior = 0x0,
-        None = 0x1,
         AssemblyDirectory = 0x2,
         UseDllDirectoryForDependencies = 0x100,
         ApplicationDirectory = 0x200,
@@ -305,22 +312,18 @@ namespace Internal.TypeSystem
 
         public readonly PInvokeFlags Flags;
 
-        public readonly DllImportSearchPath DllImportSearchPath;
-
-        public PInvokeMetadata(string module, string entrypoint, PInvokeAttributes attributes, DllImportSearchPath dllImageSearchPath)
+        public PInvokeMetadata(string module, string entrypoint, PInvokeAttributes attributes)
         {
             Name = entrypoint;
             Module = module;
             Flags = new PInvokeFlags(attributes);
-            DllImportSearchPath = dllImageSearchPath;
         }
 
-        public PInvokeMetadata(string module, string entrypoint, PInvokeFlags flags, DllImportSearchPath dllImageSearchPath)
+        public PInvokeMetadata(string module, string entrypoint, PInvokeFlags flags)
         {
             Name = entrypoint;
             Module = module;
             Flags = flags;
-            DllImportSearchPath = dllImageSearchPath;
         }
     }
 

@@ -161,9 +161,9 @@ namespace Internal.TypeSystem.Ecma
             }
         }
 
-        public static DllImportSearchPath GetDllImportSearchPath(this EcmaMethod method)
+        public static DllImportSearchPath? GetDllImportSearchPath(this EcmaMethod method)
         {
-            DllImportSearchPath dllImportSearchPath = DllImportSearchPath.None;
+            DllImportSearchPath? dllImportSearchPath = null;
 
             if (!method.IsPInvoke)
             {
@@ -183,9 +183,9 @@ namespace Internal.TypeSystem.Ecma
             return dllImportSearchPath;
         }
 
-        public static DllImportSearchPath GetDllImportSearchPath(this EcmaAssembly assembly)
+        public static DllImportSearchPath? GetDllImportSearchPath(this EcmaAssembly assembly)
         {
-            DllImportSearchPath dllImportSearchPath = DllImportSearchPath.None;
+            DllImportSearchPath? dllImportSearchPath = null;
 
             var customAttributeValue = assembly.GetDecodedCustomAttribute(
                                "System.Runtime.InteropServices", "DefaultDllImportSearchPathsAttribute");

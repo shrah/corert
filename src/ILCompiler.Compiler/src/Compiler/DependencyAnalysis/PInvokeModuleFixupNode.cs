@@ -13,18 +13,20 @@ namespace ILCompiler.DependencyAnalysis
     public class PInvokeModuleFixupNode : ObjectNode, ISymbolDefinitionNode
     {
         public string _moduleName;
-        public DllImportSearchPath _dllImportSearchPath;
+        public PInvokeAttributes _pinvokeAttributes;
 
-        public PInvokeModuleFixupNode(string moduleName, DllImportSearchPath dllImportSearchPath)
+        public PInvokeModuleFixupNode(string moduleName, PInvokeAttributes pinvokeAttributes)
         {
             _moduleName = moduleName;
-            _dllImportSearchPath = dllImportSearchPath;
+            _pinvokeAttributes = pinvokeAttributes;
         }
 
         public void AppendMangledName(NameMangler nameMangler, Utf8StringBuilder sb)
         {
             sb.Append("__nativemodule_");
             sb.Append(_moduleName);
+            sb.Append("__");
+            sb.Append(((int)_pinvokeAttributes).ToString());
         }
         public int Offset => 0;
         public override bool IsShareable => true;
@@ -48,7 +50,7 @@ namespace ILCompiler.DependencyAnalysis
 
             builder.EmitZeroPointer();
             builder.EmitPointerReloc(nameSymbol);
-            builder.EmitInt((int)_dllImportSearchPath);
+            builder.EmitInt((int)_pinvokeAttributes);
 
             return builder.ToObjectData();
         }

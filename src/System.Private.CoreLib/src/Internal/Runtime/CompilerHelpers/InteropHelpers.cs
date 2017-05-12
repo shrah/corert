@@ -216,7 +216,7 @@ namespace Internal.Runtime.CompilerHelpers
             return pCell->Target;
         }
 
-        internal static unsafe IntPtr TryResolveModule(string moduleName, DllImportSearchPath dllImportSearchPath)
+        internal static unsafe IntPtr TryResolveModule(string moduleName, PInvokeAttributes pinvokeAttributes)
         {
             IntPtr hModule = IntPtr.Zero;
 
@@ -227,9 +227,9 @@ namespace Internal.Runtime.CompilerHelpers
             bool searchAssemblyDirectory = true;
             bool isRelativePath = !System.IO.Path.IsPathRooted(moduleName);
 
-            if (dllImportSearchPath != DllImportSearchPath.None)
+            if ((pinvokeAttributes & PInvokeAttributes.DllImportSearchPathMask) != 0)
             {
-                searchAssemblyDirectory = (dllImportSearchPath & DllImportSearchPath.AssemblyDirectory) != 0;
+                searchAssemblyDirectory = (pinvokeAttributes & PInvokeAttributes.DllImportSearchPathAssemblyDirectory) != 0;
             }
 
             string path = String.Empty;
@@ -310,7 +310,7 @@ namespace Internal.Runtime.CompilerHelpers
         internal static unsafe void FixupModuleCell(ModuleFixupCell* pCell)
         {
             string moduleName = GetModuleName(pCell);
-            IntPtr hModule = TryResolveModule(moduleName, pCell->DllImportSearchPath);
+            IntPtr hModule = TryResolveModule(moduleName, pCell->Attributes);
             if (hModule != IntPtr.Zero)
             {
                 var oldValue = Interlocked.CompareExchange(ref pCell->Handle, hModule, IntPtr.Zero);
@@ -397,16 +397,36 @@ namespace Internal.Runtime.CompilerHelpers
             return PInvokeMarshal.GetCurrentCalleeDelegate<T>();
         }
 
-        public enum DllImportSearchPath : int
+        [Flags]
+        public enum PInvokeAttributes : int
         {
-            LegacyBehavior = 0x0,
-            None = 0x1,
-            AssemblyDirectory = 0x2,
-            UseDllDirectoryForDependencies = 0x100,
-            ApplicationDirectory = 0x200,
-            UserDirectories = 0x400,
-            System32 = 0x800,
-            SafeDirectories = 0x1000
+            None = 0,
+            ExactSpelling = 1,
+            CharSetAnsi = 2,
+            CharSetUnicode = 4,
+            CharSetAuto = 6,
+            CharSetMask = 6,
+            BestFitMappingEnable = 16,
+            BestFitMappingDisable = 32,
+            BestFitMappingMask = 48,
+            SetLastError = 64,
+            CallingConventionWinApi = 256,
+            CallingConventionCDecl = 512,
+            CallingConventionStdCall = 768,
+            CallingConventionThisCall = 1024,
+            CallingConventionFastCall = 1280,
+            CallingConventionMask = 1792,
+            ThrowOnUnmappableCharEnable = 4096,
+            ThrowOnUnmappableCharDisable = 8192,
+            ThrowOnUnmappableCharMask = 12288,
+            DllImportSearchPathLegacyBehavior = 16384,
+            DllImportSearchPathAssemblyDirectory = 32768,
+            DllImportSearchPathUseDllDirectoryForDependencies = 65536,
+            DllImportSearchPathApplicationDirectory = 131072,
+            DllImportSearchPathUserDirectories = 262144,
+            DllImportSearchPathSystem32 = 524288,
+            DllImportSearchPathSafeDirectories = 1048576,
+            DllImportSearchPathMask = 2080768
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -414,7 +434,7 @@ namespace Internal.Runtime.CompilerHelpers
         {
             public IntPtr Handle;
             public IntPtr ModuleName;
-            public DllImportSearchPath DllImportSearchPath;
+            public PInvokeAttributes Attributes;
         }
 
         [StructLayout(LayoutKind.Sequential)]

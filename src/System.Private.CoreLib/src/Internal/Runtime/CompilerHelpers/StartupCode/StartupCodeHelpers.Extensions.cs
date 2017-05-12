@@ -52,9 +52,9 @@ namespace Internal.Runtime.CompilerHelpers
         }
 
         [NativeCallable(EntryPoint = "InitializeBasePath", CallingConvention = CallingConvention.Cdecl)]
-        internal static unsafe void InitializeBasePath(char* path)
+        internal static unsafe void InitializeBasePath(IntPtr path)
         {
-            BasePath = new String(path);
+            BasePath = new String((char *)path);
         }
 
         private static void SetLatchedExitCode(int exitCode)

@@ -428,16 +428,49 @@ namespace Internal.TypeSystem.Ecma
             Debug.Assert((int)MethodImportAttributes.CharSetUnicode == (int)PInvokeAttributes.CharSetUnicode);
             Debug.Assert((int)MethodImportAttributes.SetLastError == (int)PInvokeAttributes.SetLastError);
 
-            DllImportSearchPath dllImportSearchPath = this.GetDllImportSearchPath();
+            PInvokeAttributes pinvokeAttribtues = (PInvokeAttributes)import.Attributes;
+
+            DllImportSearchPath? dllImportSearchPath = this.GetDllImportSearchPath();
 
             // if DefaultDllImportSearchPathAttribute is not assigned on the method
             // check to see whether it is assigned on the containing assembly
-            if (dllImportSearchPath == DllImportSearchPath.None)
+            if (!dllImportSearchPath.HasValue)
             {
                 Debug.Assert(Module is IAssemblyDesc, "Multi-module assemblies");
                 dllImportSearchPath = ((EcmaAssembly)Module).GetDllImportSearchPath();
             }
-            return new PInvokeMetadata(moduleName, name, (PInvokeAttributes)import.Attributes, dllImportSearchPath);
+
+            if (dllImportSearchPath.HasValue)
+            {
+                switch (dllImportSearchPath.Value)
+                {
+                    case DllImportSearchPath.ApplicationDirectory:
+                        pinvokeAttribtues |= PInvokeAttributes.DllImportSearchPathApplicationDirectory;
+                        break;
+                    case DllImportSearchPath.AssemblyDirectory:
+                        pinvokeAttribtues |= PInvokeAttributes.DllImportSearchPathAssemblyDirectory;
+                        break;
+                    case DllImportSearchPath.LegacyBehavior:
+                        pinvokeAttribtues |= PInvokeAttributes.DllImportSearchPathLegacyBehavior;
+                        break;
+                    case DllImportSearchPath.SafeDirectories:
+                        pinvokeAttribtues |= PInvokeAttributes.DllImportSearchPathSafeDirectories;
+                        break;
+                    case DllImportSearchPath.System32:
+                        pinvokeAttribtues |= PInvokeAttributes.DllImportSearchPathSystem32;
+                        break;
+                    case DllImportSearchPath.UseDllDirectoryForDependencies:
+                        pinvokeAttribtues |= PInvokeAttributes.DllImportSearchPathUseDllDirectoryForDependencies;
+                        break;
+                    case DllImportSearchPath.UserDirectories:
+                        pinvokeAttribtues |= PInvokeAttributes.DllImportSearchPathUserDirectories;
+                        break;
+                    default:
+                        Debug.Assert(false, "Unexpected DllImportSearchPath");
+                        break;
+                }
+            }
+            return new PInvokeMetadata(moduleName, name, pinvokeAttribtues);
         }
 
         public override ParameterMetadata[] GetParameterMetadata()

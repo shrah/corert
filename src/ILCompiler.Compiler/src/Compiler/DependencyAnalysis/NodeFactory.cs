@@ -262,14 +262,14 @@ namespace ILCompiler.DependencyAnalysis
                 return new ExternSymbolNode(name);
             });
 
-            _pInvokeModuleFixups = new NodeCache<Tuple<string, DllImportSearchPath>, PInvokeModuleFixupNode>((Tuple<string, DllImportSearchPath> key) =>
+            _pInvokeModuleFixups = new NodeCache<Tuple<string, PInvokeAttributes>, PInvokeModuleFixupNode>((Tuple<string, PInvokeAttributes> key) =>
             {
                 return new PInvokeModuleFixupNode(key.Item1, key.Item2);
             });
 
-            _pInvokeMethodFixups = new NodeCache<Tuple<string, string, DllImportSearchPath>, PInvokeMethodFixupNode>((Tuple<string, string, DllImportSearchPath> key) =>
+            _pInvokeMethodFixups = new NodeCache<PInvokeMetadata, PInvokeMethodFixupNode>((PInvokeMetadata key) =>
             {
-                return new PInvokeMethodFixupNode(key.Item1, key.Item2, key.Item3);
+                return new PInvokeMethodFixupNode(key);
             });
 
             _methodEntrypoints = new NodeCache<MethodDesc, IMethodNode>(CreateMethodEntrypointNode);
@@ -604,18 +604,18 @@ namespace ILCompiler.DependencyAnalysis
             return _externSymbols.GetOrAdd(name);
         }
 
-        private NodeCache<Tuple<string, DllImportSearchPath>, PInvokeModuleFixupNode> _pInvokeModuleFixups;
+        private NodeCache<Tuple<string, PInvokeAttributes>, PInvokeModuleFixupNode> _pInvokeModuleFixups;
 
-        public ISymbolNode PInvokeModuleFixup(string moduleName, DllImportSearchPath dllImportSearchPath)
+        public ISymbolNode PInvokeModuleFixup(string moduleName, PInvokeAttributes pinvokeAttributes)
         {
-            return _pInvokeModuleFixups.GetOrAdd(new Tuple<string, DllImportSearchPath>(moduleName, dllImportSearchPath));
+            return _pInvokeModuleFixups.GetOrAdd(new Tuple<string, PInvokeAttributes>(moduleName, pinvokeAttributes));
         }
 
-        private NodeCache<Tuple<string, string, DllImportSearchPath>, PInvokeMethodFixupNode> _pInvokeMethodFixups;
+        private NodeCache<PInvokeMetadata, PInvokeMethodFixupNode> _pInvokeMethodFixups;
 
-        public PInvokeMethodFixupNode PInvokeMethodFixup(string moduleName, string entryPointName, DllImportSearchPath dllImportSearchPath)
+        public PInvokeMethodFixupNode PInvokeMethodFixup(PInvokeMetadata metadata)
         {
-            return _pInvokeMethodFixups.GetOrAdd(new Tuple<string, string, DllImportSearchPath>(moduleName, entryPointName, dllImportSearchPath));
+            return _pInvokeMethodFixups.GetOrAdd(metadata);
         }
 
         private NodeCache<TypeDesc, VTableSliceNode> _vTableNodes;

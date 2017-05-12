@@ -43,9 +43,11 @@ extern "C" bool GetEntrypointExecutableAbsolutePath(short **buf)
     *buf = NULL;
 #ifdef _WIN32
     int length = MAX_PATH;
+    wchar_t *path = NULL;
+    size_t cSize = 0;
     while (true)
     {
-        short *path = (short *)CoTaskMemAlloc(sizeof(short) * length);
+        path = (wchar_t *)CoTaskMemAlloc(sizeof(wchar_t) * length);
         int nBytes = GetModuleFileNameW(NULL, path, MAX_PATH);
         if (nBytes == 0)
         {
@@ -55,12 +57,13 @@ extern "C" bool GetEntrypointExecutableAbsolutePath(short **buf)
         else if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
         {
             length = length << 1;
-            path = (short *)CoTaskMemRealloc(path, length);
+            path = (wchar_t *)CoTaskMemRealloc(path, length);
         }
         else
         {
-            *buf = path;
-            return true;
+            result = true;
+            cSize = wcslen(path) + 1;
+            break;
         }
     }
 #else
@@ -115,20 +118,22 @@ extern "C" bool GetEntrypointExecutableAbsolutePath(short **buf)
     }
 #endif 
     if (result == true)
-    { 
+    {
+        cSize = strlen(path) + 1;
+    }
+#endif // !_WIN32
+    if (result == true)
+    {
         // convert ansi to unicode
-        const size_t cSize = strlen(path) + 1;
         *buf = (short *)malloc(sizeof(short) * cSize);
-        for(int i = 0; i < cSize; i++)
+        for (int i = 0; i < cSize; i++)
             (*buf)[i] = path[i];
     }
-    
+
     if (path != NULL)
     {
         free(path);
     }
-
-#endif
 
     return result;
 }

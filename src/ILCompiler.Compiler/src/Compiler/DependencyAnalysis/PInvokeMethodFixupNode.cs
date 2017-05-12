@@ -14,23 +14,19 @@ namespace ILCompiler.DependencyAnalysis
     /// </summary>
     public class PInvokeMethodFixupNode : ObjectNode, ISymbolDefinitionNode
     {
-        private string _moduleName;
-        private string _entryPointName;
-        private DllImportSearchPath _dllImportSearchPath;
+        private PInvokeMetadata _metadata;
 
-        public PInvokeMethodFixupNode(string moduleName, string entryPointName, DllImportSearchPath dllImportSearchPath)
+        public PInvokeMethodFixupNode(PInvokeMetadata metadata)
         {
-            _moduleName = moduleName;
-            _entryPointName = entryPointName;
-            _dllImportSearchPath = dllImportSearchPath;
+            _metadata = metadata;
         }
 
         public void AppendMangledName(NameMangler nameMangler, Utf8StringBuilder sb)
         {
             sb.Append("__pinvoke_");
-            sb.Append(_moduleName);
+            sb.Append(_metadata.Module);
             sb.Append("__");
-            sb.Append(_entryPointName);
+            sb.Append(_metadata.Name);
         }
         public int Offset => 0;
         public override bool IsShareable => true;
@@ -54,12 +50,12 @@ namespace ILCompiler.DependencyAnalysis
             builder.EmitZeroPointer();
 
             // Entry point name
-            if (factory.Target.IsWindows && _entryPointName.StartsWith("#", StringComparison.OrdinalIgnoreCase))
+            if (factory.Target.IsWindows && _metadata.Name.StartsWith("#", StringComparison.OrdinalIgnoreCase))
             {
                 // Windows-specific ordinal import
                 // CLR-compatible behavior: Strings that can't be parsed as a signed integer are treated as zero.
                 int entrypointOrdinal;
-                if (!int.TryParse(_entryPointName.Substring(1), out entrypointOrdinal))
+                if (!int.TryParse(_metadata.Name.Substring(1), out entrypointOrdinal))
                     entrypointOrdinal = 0;
 
                 // CLR-compatible behavior: Ordinal imports are 16-bit on Windows. Discard rest of the bits.
@@ -68,11 +64,11 @@ namespace ILCompiler.DependencyAnalysis
             else
             {
                 // Import by name
-                builder.EmitPointerReloc(factory.ConstantUtf8String(_entryPointName));
+                builder.EmitPointerReloc(factory.ConstantUtf8String(_metadata.Name));
             }
 
             // Module fixup cell
-            builder.EmitPointerReloc(factory.PInvokeModuleFixup(_moduleName, _dllImportSearchPath));
+            builder.EmitPointerReloc(factory.PInvokeModuleFixup(_metadata.Module, _metadata.Flags.Attributes));
 
             return builder.ToObjectData();
         }
